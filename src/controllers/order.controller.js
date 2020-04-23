@@ -89,4 +89,50 @@ orderCtrl.findOrder = (req, res) => {
     });
 };
 
+//PUT
+orderCtrl.updateOrder = (req, res) => {
+  //
+  let id = req.params.id;
+  let body = req.body;
+  let options = {
+    new: true,
+    runValidators: true,
+  };
+  Order.findByIdAndUpdate(id, body, options)
+    .then((orderDB) => {
+      res.json({
+        ok: true,
+        message: "Product successfully updated",
+        orderDB,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        ok: false,
+        err,
+      });
+    });
+};
+
+// DELETE
+orderCtrl.deleteOrder = (req, res) => {
+  let id = req.params.id;
+
+  Order.findByIdAndRemove(id)
+    .then((orderDB) => {
+      res.json({
+        ok: false,
+        message: "Delted Successfully !",
+        orderDB,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        ok: false,
+        message: "Not Found",
+        err,
+      });
+    });
+};
+
 module.exports = orderCtrl;
