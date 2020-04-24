@@ -64,21 +64,6 @@ categoryCtlr.findById = (req, res) => {
         err,
       });
     });
-
-  // Category.findById(id)
-  //   .then((categoryDB) => {
-  //     res.json({
-  //       ok: true,
-  //       message: "Se encontro",
-  //       categoryDB,
-  //     });
-  //   })
-  //   .catch((err) =>
-  //     res.status(500).json({
-  //       ok: false,
-  //       err,
-  //     })
-  //   );
 };
 
 // PUT
