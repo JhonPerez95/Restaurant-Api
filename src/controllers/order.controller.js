@@ -24,21 +24,14 @@ orderCtrl.saveOrder = async (req, res) => {
     });
 
     let savedOder = await order.save();
+    updateProduct(productDB, products, res);
 
-    let updated = await updateProduct(productDB, products);
-    if (!updated) {
-      res.json({
-        ok: false,
-        message: "No se pudo actualizar produc",
-      });
-    } else {
-      res.json({
-        ok: true,
-        message: "Saved Order",
-        savedOder,
-        messageUpdate: "updated successfully",
-      });
-    }
+    res.json({
+      ok: true,
+      message: "Saved Order",
+      savedOder,
+      messageUpdate: "updated successfully",
+    });
   }
 };
 
@@ -74,7 +67,7 @@ let findQuantity = (productDB, products) => {
   return prueba;
 };
 
-let updateProduct = async (productDB, products) => {
+let updateProduct = async (productDB, products, res) => {
   for (let i = 0; i < productDB.length; i++) {
     qty = products.find((data) => data.product == productDB[i]._id).quantity;
 
@@ -88,7 +81,10 @@ let updateProduct = async (productDB, products) => {
         quantityNew
       );
       if (!modify) {
-        return false;
+        res.json({
+          ok: false,
+          message: "No se pudo actualizar product",
+        });
       } else {
         return true;
       }
