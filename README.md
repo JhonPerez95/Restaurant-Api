@@ -9,12 +9,12 @@ Manejo de tecnologias:
 En desarrollo:
 - Dotenv
 - Nodemon
+ 
+Instalar Dependecias: <br/>
+## npm install
 
-Iniciar:
-$ npm install
-
-Ejecutar:
-$ node src/index.js
+Ejecutar: <br/>
+## node src/index.js
 
 Coleccion en Postman: 
 https://www.getpostman.com/collections/02a95b2da703592b5b5e
