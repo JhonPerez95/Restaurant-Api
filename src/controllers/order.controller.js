@@ -8,69 +8,89 @@ orderCtrl.saveOrder = async (req, res) => {
   let body = req.body;
   let products = body.items;
 
+  let productDB = await findProduct(products);
+  let productOrder = await findQuantity(productDB, products);
+
+  if (productOrder.ok === false) {
+    console.log(productOrder.message);
+    res.json({
+      ok: false,
+      message: productOrder.message,
+    });
+  } else {
+    let order = new Order({
+      total: body.total,
+      items: productOrder,
+    });
+
+    let savedOder = await order.save();
+    updateProduct(productDB, products, res);
+
+    res.json({
+      ok: true,
+      message: "Saved Order",
+      savedOder,
+      messageUpdate: "updated successfully",
+    });
+  }
+};
+
+let findProduct = async (products) => {
   let idProduct = [];
   products.forEach((element) => {
     idProduct.push(element.product);
   });
 
-  let productOrder = [];
-
-  Product.find()
-    .where("_id")
-    .in(idProduct)
-    .then(async (productDB) => {
-      for (let i = 0; i < productDB.length; i++) {
-        //  products ---- Array pedido
-        //  productDB --- Array db
-
-        let qty = products.find((data) => data.product == productDB[i]._id)
-          .quantity;
-
-        if (qty <= productDB[i].quantity) {
-          quantityNew = {
-            quantity: productDB[i].quantity - qty,
-          };
-          let options = {
-            new: true,
-            runValidators: true,
-          };
-
-          let modify = await Product.findByIdAndUpdate(
-            productDB[i]._id,
-            quantityNew,
-            options
-          );
-
-          if (modify) {
-            productOrder.push({
-              product: modify._id,
-              quantity: qty,
-              isAdditional: products.isAdditional,
-            });
-          }
-        }
-      }
-      // console.log(productOrder);
-      let order = new Order({
-        total: body.total,
-        items: productOrder,
-      });
-
-      let orderDB = await order.save();
-      res.json({
-        ok: true,
-        message: "Saved Order",
-        orderDB,
-      });
-    })
-    .catch((err) => {
-      res.status(500).json({
-        ok: false,
-        err,
-      });
-    });
+  let productDB = await Product.find().where("_id").in(idProduct);
+  return productDB;
 };
 
+let findQuantity = (productDB, products) => {
+  let prueba = [];
+
+  for (let i = 0; i < productDB.length; i++) {
+    qty = products.find((data) => data.product == productDB[i]._id).quantity;
+
+    if (qty <= productDB[i].quantity) {
+      prueba.push({
+        product: productDB[i]._id,
+        quantity: qty,
+        isAdditional: products[i].isAdditional,
+      });
+    } else {
+      return {
+        ok: false,
+        message: `Hay disponibles  ${productDB[i].quantity} unidades de ${productDB[i].name} , escoja otro producto `,
+      };
+    }
+  }
+  return prueba;
+};
+
+let updateProduct = async (productDB, products, res) => {
+  for (let i = 0; i < productDB.length; i++) {
+    qty = products.find((data) => data.product == productDB[i]._id).quantity;
+
+    if (qty <= productDB[i].quantity) {
+      quantityNew = {
+        quantity: productDB[i].quantity - qty,
+      };
+
+      let modify = await Product.findByIdAndUpdate(
+        productDB[i]._id,
+        quantityNew
+      );
+      if (!modify) {
+        res.json({
+          ok: false,
+          message: "No se pudo actualizar product",
+        });
+      } else {
+        return true;
+      }
+    }
+  }
+};
 // GET
 orderCtrl.findOrder = (req, res) => {
   Order.find({})
